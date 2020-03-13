@@ -22,6 +22,8 @@ import net.corda.djvm.source.UserSource
 import net.corda.node.internal.djvm.DeterministicVerifier
 import java.net.URL
 import java.net.URLClassLoader
+import java.security.AccessController.doPrivileged
+import java.security.PrivilegedAction
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.UnaryOperator
@@ -77,8 +79,10 @@ class DeterministicVerifierFactoryService(
     }
 
     private fun createSandbox(userSource: Array<URL>): SandboxConfiguration {
-        return baseSandboxConfiguration.createChild(UserPathSource(userSource), Consumer {
-            it.setExternalCache(cordappByteCodeCache)
+        return doPrivileged(PrivilegedAction {
+            baseSandboxConfiguration.createChild(UserPathSource(userSource), Consumer {
+                it.setExternalCache(cordappByteCodeCache)
+            })
         })
     }
 
