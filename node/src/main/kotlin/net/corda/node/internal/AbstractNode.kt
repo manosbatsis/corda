@@ -32,6 +32,7 @@ import net.corda.core.internal.FlowStateMachine
 import net.corda.core.internal.NODE_INFO_DIRECTORY
 import net.corda.core.internal.NamedCacheFactory
 import net.corda.core.internal.NetworkParametersStorage
+import net.corda.core.internal.ServiceHubCoreInternal
 import net.corda.core.internal.VisibleForTesting
 import net.corda.core.internal.concurrent.flatMap
 import net.corda.core.internal.concurrent.map
@@ -56,6 +57,7 @@ import net.corda.core.node.services.KeyManagementService
 import net.corda.core.node.services.TransactionVerifierService
 import net.corda.core.node.services.diagnostics.DiagnosticsService
 import net.corda.core.schemas.MappedSchema
+import net.corda.core.security.CordaPermission
 import net.corda.core.serialization.SerializationWhitelist
 import net.corda.core.serialization.SerializeAsToken
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -280,7 +282,7 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
     val pkToIdCache = PublicKeyToOwningIdentityCacheImpl(database, cacheFactory)
     @Suppress("LeakingThis")
     val keyManagementService = makeKeyManagementService(identityService).tokenize()
-    val servicesForResolution = ServicesForResolutionImpl(identityService, attachments, cordappProvider, networkParametersStorage, transactionStorage).also {
+    val servicesForResolution = ServicesForResolutionImpl(identityService, attachments, cordappProvider, networkParametersStorage, null, transactionStorage).also {
         attachments.servicesForResolution = it
     }
     @Suppress("LeakingThis")
@@ -774,7 +776,7 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
             numberOfThreads,
             0L,
             TimeUnit.MILLISECONDS,
-            LinkedBlockingQueue<Runnable>(),
+            LinkedBlockingQueue(),
             ThreadFactoryBuilder().setNameFormat("flow-external-operation-thread").setDaemon(true).build()
         )
     }
@@ -1011,7 +1013,7 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
      * Note that obtainIdentity returns a KeyPair with an [AliasPrivateKey].
      */
     private fun obtainIdentity(): Pair<PartyAndCertificate, KeyPair> {
-        val legalIdentityPrivateKeyAlias = "$NODE_IDENTITY_KEY_ALIAS"
+        val legalIdentityPrivateKeyAlias = NODE_IDENTITY_KEY_ALIAS
 
         var signingCertificateStore = configuration.signingCertificateStore.get()
         if (!cryptoService.containsKey(legalIdentityPrivateKeyAlias) && !signingCertificateStore.contains(legalIdentityPrivateKeyAlias)) {
@@ -1142,6 +1144,12 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
         }
     }
 
+    private fun checkAccess() {
+        System.getSecurityManager()?.apply {
+            checkPermission(CordaPermission("node"))
+        }
+    }
+
     inner class ServiceHubInternalImpl : SingletonSerializeAsToken(), ServiceHubInternal, ServicesForResolution by servicesForResolution {
         override val rpcFlows = ArrayList<Class<out FlowLogic<*>>>()
         override val stateMachineRecordedTransactionMapping = DBTransactionMappingStorage(database)
@@ -1161,7 +1169,14 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
         override val attachments: AttachmentStorageInternal get() = this@AbstractNode.attachments
         override val networkService: MessagingService get() = network
         override val clock: Clock get() = platformClock
-        override val configuration: NodeConfiguration get() = this@AbstractNode.configuration
+        override val configuration: NodeConfiguration get() {
+            checkAccess()
+            return this@AbstractNode.configuration
+        }
+        override val coreInternal: ServiceHubCoreInternal get() {
+            checkAccess()
+            return this
+        }
         override val networkMapUpdater: NetworkMapUpdater get() = this@AbstractNode.networkMapUpdater
         override val cacheFactory: NamedCacheFactory get() = this@AbstractNode.cacheFactory
         override val networkParametersService: NetworkParametersStorage get() = this@AbstractNode.networkParametersStorage
@@ -1194,7 +1209,10 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
         /**
          * Exposes the database connection as a [RestrictedConnection] to the users.
          */
-        override fun jdbcSession(): Connection = RestrictedConnection(database.createSession())
+        override fun jdbcSession(): Connection {
+            checkAccess()
+            return RestrictedConnection(database.createSession())
+        }
 
         override fun <T : Any?> withEntityManager(block: EntityManager.() -> T): T {
             return database.transaction(useErrorHandler = false) {
