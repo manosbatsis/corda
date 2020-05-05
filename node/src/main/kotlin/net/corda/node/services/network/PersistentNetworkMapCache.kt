@@ -23,6 +23,7 @@ import net.corda.core.utilities.Try
 import net.corda.core.utilities.contextLogger
 import net.corda.core.utilities.debug
 import net.corda.node.internal.schemas.NodeInfoSchemaV1
+import net.corda.node.services.api.IdentityServiceInternal
 import net.corda.node.services.api.NetworkMapCacheInternal
 import net.corda.node.utilities.NonInvalidatingCache
 import net.corda.nodeapi.internal.persistence.CordaPersistence
@@ -40,7 +41,8 @@ import javax.persistence.PersistenceException
 @ThreadSafe
 open class PersistentNetworkMapCache(cacheFactory: NamedCacheFactory,
                                      private val database: CordaPersistence,
-                                     private val identityService: IdentityService) : NetworkMapCacheInternal, SingletonSerializeAsToken() {
+                                     private val identityService: IdentityServiceInternal
+) : NetworkMapCacheInternal, SingletonSerializeAsToken() {
 
     companion object {
         private val logger = contextLogger()
@@ -245,7 +247,7 @@ open class PersistentNetworkMapCache(cacheFactory: NamedCacheFactory,
         // First verify all the node's identities are valid before registering any of them
         return if (verifyIdentities(node)) {
             for (identity in node.legalIdentitiesAndCerts) {
-                identityService.verifyAndRegisterIdentity(identity)
+                identityService.verifyAndRegisterLegalIdentity(identity)
             }
             true
         } else {
