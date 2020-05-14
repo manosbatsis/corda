@@ -33,7 +33,7 @@ pipeline {
                             }
 
                             withCredentials([string(credentialsId: 'container_reg_passwd', variable: 'DOCKER_PUSH_PWD')]) {
-                                sh "./gradlew " +
+                                sh "./gradlew --no-daemon " +
                                         "-Dkubenetize=true " +
                                         "-Ddocker.push.password=\"\${DOCKER_PUSH_PWD}\" " +
                                         "-Ddocker.work.dir=\"/tmp/\${EXECUTOR_NUMBER}\" " +
