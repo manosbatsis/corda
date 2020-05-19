@@ -162,7 +162,7 @@ buildscript {
         if (System.getenv("CORDA_USE_CACHE")) {
             maven {
                 name "R3 Maven remote repositories"
-                url "https://software.r3.com/artifactory/${System.getenv("CORDA_USE_CACHE")}"
+                url "${artifactory_contextUrl}/${System.getenv("CORDA_USE_CACHE")}"
                 authentication {
                     basic(BasicAuthentication)
                 }
@@ -178,10 +178,10 @@ buildscript {
                 url 'https://kotlin.bintray.com/kotlinx'
             }
             maven {
-                url "$artifactory_contextUrl/corda-dependencies-dev"
+                url "${artifactory_contextUrl}/corda-dependencies-dev"
             }
             maven {
-                url "$artifactory_contextUrl/corda-releases"
+                url "${artifactory_contextUrl}/corda-releases"
             }
         }
     }
@@ -382,7 +382,7 @@ allprojects {
         if (System.getenv("CORDA_USE_CACHE")) {
             maven {
                 name "R3 Maven remote repositories"
-                url "https://software.r3.com/artifactory/${System.getenv("CORDA_USE_CACHE")}"
+                url "${artifactory_contextUrl}/${System.getenv("CORDA_USE_CACHE")}"
                 authentication {
                     basic(BasicAuthentication)
                 }
@@ -394,9 +394,9 @@ allprojects {
         } else {
             mavenCentral()
             jcenter()
-            maven { url "$artifactory_contextUrl/corda-dependencies" }
+            maven { url "${artifactory_contextUrl}/corda-dependencies" }
             maven { url 'https://repo.gradle.org/gradle/libs-releases' }
-            maven { url "$artifactory_contextUrl/corda-dev" }
+            maven { url "${artifactory_contextUrl}/corda-dev" }
         }
     }
 

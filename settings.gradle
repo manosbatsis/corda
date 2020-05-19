@@ -9,7 +9,7 @@ pluginManagement {
         if (System.getenv("CORDA_USE_CACHE")) {
             maven {
                 name "R3 Maven remote repositories"
-                url "https://software.r3.com/artifactory/${System.getenv("CORDA_USE_CACHE")}"
+                url "${artifactory_contextUrl}/${System.getenv("CORDA_USE_CACHE")}"
                 authentication {
                     basic(BasicAuthentication)
                 }
@@ -21,7 +21,7 @@ pluginManagement {
         } else {
             mavenLocal()
             gradlePluginPortal()
-            maven { url "$artifactory_contextUrl/corda-dependencies" }
+            maven { url "${artifactory_contextUrl}/corda-dependencies" }
         }
     }
 }
