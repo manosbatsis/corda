@@ -28,6 +28,10 @@ sealed class MerkleTree {
         fun getMerkleTree(allLeavesHashes: List<SecureHash>): MerkleTree {
             if (allLeavesHashes.isEmpty())
                 throw MerkleTreeException("Cannot calculate Merkle root on empty hash list.")
+            val algorithms = allLeavesHashes.mapTo(HashSet(), SecureHash::algorithm)
+            require(algorithms.size == 1) {
+                "Cannot build Merkle tree with multiple hash algorithms: $algorithms"
+            }
             val leaves = padWithZeros(allLeavesHashes).map { Leaf(it) }
             return buildMerkleTree(leaves)
         }
@@ -36,7 +40,7 @@ sealed class MerkleTree {
         private fun padWithZeros(allLeavesHashes: List<SecureHash>): List<SecureHash> {
             var n = allLeavesHashes.size
             if (isPow2(n)) return allLeavesHashes
-            val paddedHashes = ArrayList<SecureHash>(allLeavesHashes)
+            val paddedHashes = ArrayList(allLeavesHashes)
             while (!isPow2(n++)) {
                 paddedHashes.add(SecureHash.zeroHash)
             }
@@ -58,7 +62,7 @@ sealed class MerkleTree {
                 for (i in 0..n - 2 step 2) {
                     val left = lastNodesList[i]
                     val right = lastNodesList[i + 1]
-                    val newHash = left.hash.hashConcat(right.hash)
+                    val newHash = left.hash.concatenate(right.hash)
                     val combined = Node(newHash, left, right)
                     newLevelHashes.add(combined)
                 }

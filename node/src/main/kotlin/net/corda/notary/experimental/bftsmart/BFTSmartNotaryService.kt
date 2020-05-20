@@ -150,8 +150,8 @@ class BFTSmartNotaryService(
                     val txId = it.id.txId
                     val index = it.id.index
                     Pair(
-                            StateRef(txhash = SecureHash.parse(txId), index = index),
-                            SecureHash.parse(it.consumingTxHash)
+                            StateRef(txhash = SecureHash.create(txId), index = index),
+                            SecureHash.create(it.consumingTxHash)
                     )
                 },
                 toPersistentEntity = { (txHash, index): StateRef, id: SecureHash ->

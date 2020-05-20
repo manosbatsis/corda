@@ -118,7 +118,7 @@ class DBTransactionStorage(private val database: CordaPersistence, cacheFactory:
                     name = "DBTransactionStorage_transactions",
                     toPersistentEntityKey = SecureHash::toString,
                     fromPersistentEntity = {
-                        SecureHash.parse(it.txId) to TxCacheValue(
+                        SecureHash.create(it.txId) to TxCacheValue(
                                 it.transaction.deserialize(context = contextToUse()),
                                 it.status)
                     },

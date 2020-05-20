@@ -144,7 +144,7 @@ class PartialMerkleTree(val root: PartialTree) {
                 is PartialTree.Node -> {
                     val leftHash = rootAndUsedHashes(node.left, usedHashes)
                     val rightHash = rootAndUsedHashes(node.right, usedHashes)
-                    leftHash.hashConcat(rightHash)
+                    leftHash.concatenate(rightHash)
                 }
             }
         }

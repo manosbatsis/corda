@@ -92,7 +92,7 @@ class RaftUniquenessProvider(
                 )
 
         fun StateRef.encoded() = "$txhash:$index"
-        fun String.parseStateRef() = split(":").let { StateRef(SecureHash.parse(it[0]), it[1].toInt()) }
+        fun String.parseStateRef() = split(":").let { StateRef(SecureHash.create(it[0]), it[1].toInt()) }
     }
 
     @Entity

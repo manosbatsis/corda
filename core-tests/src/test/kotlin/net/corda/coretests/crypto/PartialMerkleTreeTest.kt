@@ -120,9 +120,9 @@ class PartialMerkleTreeTest {
     @Test(timeout=300_000)
 	fun `building Merkle tree odd number of nodes`() {
         val odd = hashed.subList(0, 3)
-        val h1 = hashed[0].hashConcat(hashed[1])
-        val h2 = hashed[2].hashConcat(zeroHash)
-        val expected = h1.hashConcat(h2)
+        val h1 = hashed[0].concatenate(hashed[1])
+        val h2 = hashed[2].concatenate(zeroHash)
+        val expected = h1.concatenate(h2)
         val mt = MerkleTree.getMerkleTree(odd)
         assertEquals(mt.hash, expected)
     }
@@ -266,7 +266,7 @@ class PartialMerkleTreeTest {
 	fun `verify Partial Merkle Tree - wrong root`() {
         val inclHashes = listOf(hashed[3], hashed[5])
         val pmt = PartialMerkleTree.build(merkleTree, inclHashes)
-        val wrongRoot = hashed[3].hashConcat(hashed[5])
+        val wrongRoot = hashed[3].concatenate(hashed[5])
         assertFalse(pmt.verify(wrongRoot, inclHashes))
     }
 
