@@ -505,7 +505,7 @@ abstract class AbstractNode<S>(val configuration: NodeConfiguration,
         }
 
         val (nodeInfo, signedNodeInfo) = nodeInfoAndSigned
-        identityService.ourParty = nodeInfo.legalIdentities.first()
+        identityService.ourParty = identity.party
         services.start(nodeInfo, netParams)
         networkMapUpdater.start(
                 trustRoot,
