@@ -39,8 +39,7 @@ class PublicKeyToOwningIdentityCacheImpl(private val database: CordaPersistence,
                     log.debug { "Database lookup for public key ${key.toStringShort()}, found signing entity $signingEntity" }
                     signingEntity
                 } else {
-                    /** Always return unmapped identity. TODO: Check impact for metering. */
-                    log.debug { "Attempted to find owning identity for public key ${key.toStringShort()}, but key is unknown to node" }
+                    log.debug { "Database lookup for public key  ${key.toStringShort()}, using ${KeyOwningIdentity.UnmappedIdentity}" }
                     KeyOwningIdentity.UnmappedIdentity
                 }
             }
